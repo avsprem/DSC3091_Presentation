@@ -1,0 +1,429 @@
+---
+title: "naniar R Package"
+subtitle: "Exploring Missing Data Analysis with naniar"
+author: | 
+  S.D.A.V.S.Premathilake - S/18/SP/608
+  Faculty of Science, University of Peradeniya
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: [default, hygge, ninjutsu]
+    nature:
+      ratio: 16:9
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+
+```{r, include = F}
+# This is the recommended set up for flipbooks
+# you might think about setting cache to TRUE as you gain practice --- building flipbooks from scratch can be time consuming
+knitr::opts_chunk$set(fig.width = 6, message = FALSE, warning = FALSE, comment = "", cache = F)
+library(flipbookr)
+library(tidyverse)
+```
+
+
+
+##What are Missing Data
+
+--
+
+####Missing data refers to the absence of values or information in a dataset.
+
+--
+
+###Challenges of missing data:
+
+--
+
+- Missing data is a common issue in real-world datasets.
+
+--
+
+- Missing data can lead to biased results and inaccurate analysis
+
+--
+
+- Lead to reduced statistical power
+
+--
+
+- Can result in the loss of valuable information
+
+--
+
+###Importance of understanding and handling missing values:
+
+--
+
+- Accurate data analysis requires addressing missing values appropriately.
+
+--
+
+- Proper handling ensures valid insights and informed decision-making.
+
+--
+
+`naniar` package is a powerful tool for missing data analysis in R.
+
+---
+class: inverse, middle, center
+
+
+# "naniar" Package
+
+##An overview
+
+---
+
+###What the "naniar" package does:
+
+--
+
+"naniar" is an R package specifically designed for handling and visualizing missing data.
+
+--
+
+It offers a comprehensive set of functions and tools tailored for missing data analysis.
+
+--
+
+###Key features:
+
+--
+
+- Missing data visualization: "naniar" provides functions for visualizing missing data patterns and mechanisms.
+
+--
+
+- Data imputation: The package offers various techniques for imputing missing values in datasets.
+
+--
+
+- Compatibility with tidyverse: "naniar" integrates seamlessly with other tidyverse packages, facilitating a tidy workflow.
+
+--
+
+###Benefits of using "naniar" for missing data analysis:
+
+--
+
+- Efficient workflow: "naniar" streamlines the process of exploring and handling missing values in datasets.
+   
+--
+
+- Enhanced insights: Visualizations provided by "naniar" help understand missing data patterns and inform decision-making.
+
+--
+
+- Comprehensive toolbox: The package offers a range of functions for data imputation and missing data assessment.
+
+
+---
+class: inverse, middle, center
+
+
+# Work with "naniar"
+
+###Installation and load naniar Package
+
+---
+
+###Installation
+
+We can use simply install 'naniar' package using `install.packages("naniar")`
+
+###Load 'naniar' Package
+
+After installing the 'naniar' Package we can load it to the R workspace using `library(naniar)`
+
+
+---
+
+`r chunk_reveal("nan", title="###Demonstrate functions using 'airquality' dataset")`
+
+```{r nan, include=FALSE}
+library(naniar)
+data(airquality)
+head(airquality)
+summary(airquality)
+```
+
+---
+class: inverse, middle, center
+
+
+# Visualize Missing Data using "naniar"
+
+###vis_miss(data)
+
+---
+
+###Visualize Missing Data
+
+--
+
+`vis_miss()` will generate a missingness matrix plot showing missing data patterns in the dataset.
+
+--
+
+- The vis_miss() function generates a plot where each row represents an observation (row) in the dataset, and each column represents a variable (column)
+
+--
+
+- Missing values are denoted by empty cells, while non-missing values are represented by filled cells
+
+--
+
+- The plot may have different color schemes to indicate missingness, making it easier to identify the extent and distribution of missing values
+
+--
+
+- The visualization allows us to quickly identify patterns or clusters of missingness, helping you understand the nature of missing data in your dataset
+
+
+---
+
+`r chunk_reveal("nan2")`
+
+```{r nan2, include=FALSE}
+library(naniar)
+data(airquality)
+
+vis_miss(airquality)
+```
+
+---
+class: inverse, middle, center
+
+
+#Exploring missingness relationships using "naniar"
+
+###with 'ggplot2'
+
+---
+
+`r chunk_reveal("plot1", title="Consider following example.All the rows containing missing values are removed here. The problem with this is that ggplot does not handle missings be default, and removes the missing values")`
+
+```{r plot1, include=FALSE}
+library(ggplot2)
+ggplot(airquality, 
+       aes(x = Solar.R, 
+           y = Ozone)) + 
+  geom_point()
+```
+
+---
+
+`r chunk_reveal("plot2", title="To solve that issue, here we illustrate by exploring the relationship between Ozone and Solar radiation from the airquality dataset using the 'geom_miss_point()' function in 'naniar'")`
+
+```{r plot2, include=FALSE}
+library(ggplot2)
+library(naniar)
+
+ggplot(airquality, 
+       aes(x = Solar.R, 
+           y = Ozone)) + 
+  geom_miss_point()
+```
+
+
+---
+class: inverse, middle, center
+
+
+#Calculate missingness statistics using "naniar"
+
+###miss_var_summary(data)
+
+---
+
+###Calculate missingness statistics
+
+--
+
+`miss_var_summary()` will provide a summary of missingness statistics for each variable in the dataset
+
+--
+
+- The `miss_var_summary()` function returns a summary table with statistics for each variable in the dataset
+
+--
+
+- The summary table includes the variable name, the total number of observations (rows), the number of missing values, the percentage of missing values, and the number of unique values (excluding missing values)
+
+--
+
+- The statistics help you understand the missingness patterns for each variable, providing insights into the completeness of the data and the prevalence of missing values
+
+---
+
+`r chunk_reveal("nan3")`
+
+```{r nan3, include=FALSE}
+
+miss_summary <- miss_var_summary(airquality)
+miss_summary
+```
+
+
+---
+class: inverse, middle, center
+
+
+#Handle missing data with 'naniar'
+
+###- Complete cases
+
+###- Imputations
+
+---
+
+###Complete cases: 
+
+--
+
+- Remove observations with any missing values.
+
+--
+
+- This can be done using `complete.cases()`
+
+---
+
+`r chunk_reveal("nan4")`
+
+```{r nan4, include=FALSE}
+
+complete_cases_data <- airquality[complete.cases(airquality), ]
+miss_summary <- miss_var_summary(complete_cases_data)
+miss_summary
+```
+
+---
+
+###Imputations: 
+
+--
+
+Imputation refers to the process of filling in missing values in a dataset with estimated or plausible values
+
+--
+
+The goal of imputation is to create a complete dataset that can be used for further analysis or modeling
+
+--
+
+The "naniar" package in R provides various methods for data imputation
+
+--
+
+- Imputing with Mean:
+The `impute_mean()` function replaces missing values with the mean value of the corresponding variable.
+
+--
+
+- Imputing with Median:
+The `impute_median()` function replaces missing values with the median value of the corresponding variable
+
+--
+
+- Imputing with Random Values:
+The `impute_random()` function imputes missing values with random values drawn from the observed non-missing values of the variable.
+
+--
+
+- Imputing with Linear Interpolation:
+The `impute_linear()` function performs linear interpolation to impute missing values based on the observed values before and after the missing values
+
+---
+
+###Imputations Cont...
+
+--
+
+- Before doing imputation we might want to replace values with a missing values (NA)
+
+--
+
+- For example, we might know that all values of “N/A”, “N A”, and “Not Available”, or -99, or -1 are supposed to be missing
+
+--
+
+- We can do this by `tidyr` Package
+
+--
+
+- Install `tidyr` Package using `install.packages("tidyr")`
+
+--
+
+- Load using `library(tidyr)`
+
+--
+
+- Replace values with missing values using `replace_na()`
+
+--
+
+- Then we can do the imputations
+
+
+---
+
+`r chunk_reveal("nan5", title="Imputing with Mean: The 'impute_mean()' function replaces missing values with the mean value of the corresponding variable")`
+
+```{r nan5, include=FALSE}
+
+library(naniar)
+library(tidyr)
+
+data(airquality)
+
+# Replace NAs with a specific value (e.g., -999)
+airquality_filled <- replace_na(airquality, list(Ozone = -999, Solar.R = -999, Wind = -999, Temp = -999, Month = -999, Day = -999))
+
+
+# Impute missing values with mean
+imputed_mean_data <- impute_mean(airquality_filled)
+
+miss_summary <- miss_var_summary(imputed_mean_data)
+miss_summary
+```
+
+
+<!-- adjust font size in this css code chunk, currently 80 -->
+
+```{css, eval = TRUE, echo = FALSE}
+.remark-code{line-height: 1.5; font-size: 80%}
+
+@media print {
+  .has-continuation {
+    display: block;
+  }
+}
+
+code.r.hljs.remark-code{
+  position: relative;
+  overflow-x: hidden;
+}
+
+
+code.r.hljs.remark-code:hover{
+  overflow-x:visible;
+  width: 500px;
+  border-style: solid;
+}
+```
+
+
+
+---
+class: inverse, center, middle
+
+
+# Thank you!
+
+
